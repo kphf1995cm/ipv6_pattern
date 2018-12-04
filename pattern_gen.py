@@ -12,7 +12,7 @@ import csv
 
 raw_ipv6_list=[]
 format_ipv6_list=[]
-threshold=20 # maximal undetermined bit num
+threshold=100 # maximal undetermined bit num
 pattern_list=[]
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
 ,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
@@ -22,7 +22,7 @@ num_set={0:'0',1:'1',2:'2',3:'3',4:'4',5:'5','0':0,'6':6,7:'7',8:'8',9:'9'
 
 def print_list(value_list):
 	for x in value_list:
-		print(x)
+		print('%#x'%x)
 
 def read_data_from_excel(path,sheet_name,col):
 	data=xlrd.open_workbook('alexa1m-2017-04-03.csv')
@@ -138,11 +138,13 @@ def determine_next_bit(pattern,undetermined_num,mode):
 			ipv6=ipv6>>(undetermined_num-1)
 			bit=ipv6&1
 			ipv6=ipv6>>1
+			#print("pattern:",pattern,"ipv6:",ipv6)
 			if pattern==ipv6:
 				if bit==1:
 					num_1=num_1+1
 				else:
 					num_0=num_0+1
+			#print("num_1:",num_1,"num_0:",num_0)
 		if num_1>=num_0:
 			return 1
 		else:
@@ -151,7 +153,7 @@ def determine_next_bit(pattern,undetermined_num,mode):
 # threshold: undetermined bit num
 def generate_ipv6_pattern():
 	# mode 1
-	pattern=0x80000000000000000000000000000000
+	pattern=0x00000000000000000000000000000000
 	do_recursion_with(pattern,127,1)
 
 	# mode 2
