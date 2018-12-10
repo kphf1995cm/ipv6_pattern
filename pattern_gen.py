@@ -12,18 +12,67 @@ import csv
 
 raw_ipv6_list=[]
 format_ipv6_list=[]
-threshold=100 # maximal undetermined bit num
+threshold=100 # maximal undetermined bit num,global variable
 pattern_list=[]
+best_pattern_num=10
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
 ,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
 digit_set={"10":'a',"11":'b',"12":'c',"13":'d',"14":'e',"15":'f'}
 num_set={0:'0',1:'1',2:'2',3:'3',4:'4',5:'5','0':0,'6':6,7:'7',8:'8',9:'9'
 ,10:'a',11:'b',12:'c',13:'d',14:'e',15:'f'}
 
+class PatternCount:
+	def __init__(self,pattern,count):
+		self.pattern=pattern
+		self.count=count
+	def display(self):
+		print('pattern:',pattern,'count:',count)
+	def set(self,pattern,count):
+		self.pattern=pattern
+		self.count=count
+	def get_pattern():
+		return self.pattern
+	def get_count():
+		return self.count
+
 def print_list(value_list):
 	for x in value_list:
 		print('%#x'%x)
 
+# func: ipv6 address formulate, remove duplicate ipv6 address
+# input: ipv6 address txt file path
+# output: generate a formatting ipv6 address file
+def read_data_from_txt(path):
+
+	f=open(path,'r')
+	path_seg=path.split('.')
+	dstpath=path_seg[0]+'-dst'+'.txt'
+	w=open(dstpath,'w')
+
+	line=f.readline()
+	line=line[:-1]
+
+	ipv6_dict={}
+
+	# ignore first line
+	while line:
+		line=f.readline()
+		line=line[:-1]
+		#print(line)
+		gen_line=ipv6_formate(line)
+		#print('%#x'%gen_line)
+		dst_line=str(hex(gen_line))
+		ipv6_dict[dst_line[2:]]=1
+
+	ipv6_dict_keys=ipv6_dict.keys()
+	for x in ipv6_dict_keys:
+		w.writelines(x+'\n')
+		print(x)
+		#w.writelines()
+	print('success')
+	f.close()
+	w.close()
+	
 def read_data_from_excel(path,sheet_name,col):
 	data=xlrd.open_workbook('alexa1m-2017-04-03.csv')
 	table=data.seet_by_name('alexa1m-2017-04-03')
@@ -37,8 +86,8 @@ def read_data_from_csv(path,col):
 		#raw_ipv6_list=[row[col] for row in reader]
 
 # ipv6 format standrize
-# input: 1 
-#       
+# input: 2001:1210:100:1::17
+# return:       
 def ipv6_formate(raw_ipv6):
 	#print(raw_ipv6,'%%',end=' ')
 	raw_ipv6=raw_ipv6.lower()
@@ -167,10 +216,17 @@ def print_pattern():
 def iterate_ipv6():
 	pass
 
+def select_best_no_pattern(pattern_num):
+	# use queue maintainig quantity
+	determine_bit=0
+	pattern=''
+
 if __name__=='__main__':
 
 	#read_data_from_excel('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
 	#read_data_from_excel('alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
+	read_data_from_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
+
 	read_data_from_csv('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv',0)
 	#print_list(raw_ipv6_list)
 	standard_ipv6_gen()
