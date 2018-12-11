@@ -42,7 +42,7 @@ def print_list(value_list):
 # func: ipv6 address formulate, remove duplicate ipv6 address
 # input: ipv6 address txt file path
 # output: generate a formatting ipv6 address file
-def read_data_from_txt(path):
+def read_write_data_fromin_txt(path):
 
 	f=open(path,'r')
 	path_seg=path.split('.')
@@ -67,11 +67,19 @@ def read_data_from_txt(path):
 	ipv6_dict_keys=ipv6_dict.keys()
 	for x in ipv6_dict_keys:
 		w.writelines(x+'\n')
-		print(x)
-		#w.writelines()
-	print('success')
 	f.close()
 	w.close()
+
+def read_data_from_txt(path):
+	f=open(path,'r')
+	line=f.readline()
+	line=line[:-1]
+	# ignore first line
+	while line:
+		line=f.readline()
+		line=line[:-1]
+		raw_ipv6_list.append(line)
+	f.close()
 	
 def read_data_from_excel(path,sheet_name,col):
 	data=xlrd.open_workbook('alexa1m-2017-04-03.csv')
@@ -213,9 +221,36 @@ def print_pattern():
 	for pattern in pattern_list:
 		print('%#x'%pattern)
 
-def iterate_ipv6():
-	pass
 
+res_ipv6_list=[]
+
+# parm: @ipv6_pattern: determined bit and undetermined bit(x)
+def gen_ipv6_scanning_list(ipv6_pattern):
+	length=len(ipv6_pattern)-1
+	iterate_ipv6(ipv6_pattern,0,length)
+	for x in res_ipv6_list:
+		print(x)
+	
+
+def iterate_ipv6(iterate_ipv6_pattern,pos,length):
+	if pos>length:
+		res_ipv6_list.append(iterate_ipv6_pattern)
+	else:
+		while iterate_ipv6_pattern[pos]!='x' and pos<length:
+			pos=pos+1
+		if pos>length:
+			res_ipv6_list.append(iterate_ipv6_pattern)
+		else:
+			pattern_1=list(iterate_ipv6_pattern)
+			pattern_1[pos]='1'
+			iterate_ipv6(''.join(pattern_1),pos+1,length)
+			pattern_0=list(iterate_ipv6_pattern)
+			pattern_0[pos]='0'
+			iterate_ipv6(''.join(pattern_0),pos+1,length)
+
+
+
+	
 def select_best_no_pattern(pattern_num):
 	# use queue maintainig quantity
 	determine_bit=0
@@ -225,11 +260,14 @@ if __name__=='__main__':
 
 	#read_data_from_excel('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
 	#read_data_from_excel('alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
-	read_data_from_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
+	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
 
-	read_data_from_csv('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv',0)
+	#read_data_from_csv('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv',0)
+	
+
+	#read_data_from_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
 	#print_list(raw_ipv6_list)
-	standard_ipv6_gen()
+	#standard_ipv6_gen()
 
 	#print_list(format_ipv6_list)
 	
@@ -239,9 +277,10 @@ if __name__=='__main__':
 
 	#print(ipv6_formate("2c0f:fec8:16::38:255.255.255.255"))
 
-	generate_ipv6_pattern()
-	print_pattern()
+	#generate_ipv6_pattern()
+	#print_pattern()
 
+	gen_ipv6_scanning_list('00xx000000')
 
 
 
