@@ -46,8 +46,10 @@ def read_write_data_fromin_txt(path):
 
 	f=open(path,'r')
 	path_seg=path.split('.')
-	dstpath=path_seg[0]+'-dst'+'.txt'
-	w=open(dstpath,'w')
+	testpath=path_seg[0]+'-test'+'.txt'
+	trainpath=path_seg[0]+'-train'+'.txt'
+	test=open(testpath,'w')
+	train=open(trainpath,'w')
 
 	line=f.readline()
 	line=line[:-1]
@@ -65,10 +67,16 @@ def read_write_data_fromin_txt(path):
 		ipv6_dict[dst_line[2:]]=1
 
 	ipv6_dict_keys=ipv6_dict.keys()
+	index=0
 	for x in ipv6_dict_keys:
-		w.writelines(x+'\n')
+		if index<7:
+			train.writelines(x+'\n')
+		else:
+			test.writelines(x+'\n')
+		index=(index+1)%10
 	f.close()
-	w.close()
+	test.close()
+	train.close()
 
 def read_data_from_txt(path):
 	f=open(path,'r')
@@ -260,7 +268,7 @@ if __name__=='__main__':
 
 	#read_data_from_excel('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
 	#read_data_from_excel('alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
-	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
+	read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
 
 	#read_data_from_csv('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv',0)
 	
