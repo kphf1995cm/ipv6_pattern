@@ -13,7 +13,7 @@ import csv
 raw_ipv6_list=[]
 format_ipv6_list=[]
 threshold=100 # maximal undetermined bit num,global variable
-pattern_list=[]
+pattern_list=[] # int 
 best_pattern_num=10
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
 ,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
@@ -144,7 +144,7 @@ def ipv6_formate(raw_ipv6):
 		pos=0
 		for x in ipv6_seg:
 			ipv6[pos]=x
-			pos=pos+1
+			pos=pos+1                                                      
 	# judge tail ipv6 segment is ipv4 style
 	ipv4_seg=ipv6[6].split(".") 
 	if len(ipv4_seg)!=1:
@@ -176,13 +176,30 @@ def standard_ipv6_gen():
 	for x in raw_ipv6_list:
 		format_ipv6_list.append(ipv6_formate(x))
 
+# ipv6 format:20011218100002300000000000000252
+def read_ipv6_from_32_16_txt(path):
+	f=open(path,'r')
+	line=f.readline()
+	line=line[:-1]
+
+	while line:
+		int_ipv6=0
+		for x in line:
+			int_ipv6=int_ipv6*16+char_set[x]
+		format_ipv6_list.append(int_ipv6)
+		line=f.readline()
+		line=line[:-1] 
+
+	f.close()
+
+
 # mode: front to end, end to front, edge to middle
 def do_recursion_with(pattern,undetermined_num,mode):
 	if undetermined_num<=threshold:
 		pattern_list.append(pattern)
 	else:
 		#print("pattern:",'%#x'%pattern)
-		bit=determine_next_bit(pattern,undetermined_num,mode);
+		bit=determine_next_bit(pattern,undetermined_num,mode)
 		#pattern=apply(pattern,mode,bit)
 		if mode==1:
 			pattern=pattern>>(undetermined_num-1)
@@ -221,6 +238,16 @@ def generate_ipv6_pattern():
 	pattern=0x00000000000000000000000000000000
 	do_recursion_with(pattern,127,1)
 
+def transfrom_pattern_list():
+	pattern_128_bit_list=[] # 001XX
+	for pattern in pattern_list:
+		pattern_128=""
+		for i in range(128):
+			pattern_128.append('x')
+
+
+
+
 	# mode 2
 
 	# mode 3
@@ -230,9 +257,11 @@ def print_pattern():
 		print('%#x'%pattern)
 
 
+
 res_ipv6_list=[]
 
-# parm: @ipv6_pattern: determined bit and undetermined bit(x)
+# parm: @ipv6_pattern: determined bit and undetermined bit(x) 128个
+
 def gen_ipv6_scanning_list(ipv6_pattern):
 	length=len(ipv6_pattern)-1
 	iterate_ipv6(ipv6_pattern,0,length)
@@ -256,8 +285,6 @@ def iterate_ipv6(iterate_ipv6_pattern,pos,length):
 			pattern_0[pos]='0'
 			iterate_ipv6(''.join(pattern_0),pos+1,length)
 
-
-
 	
 def select_best_no_pattern(pattern_num):
 	# use queue maintainig quantity
@@ -268,7 +295,7 @@ if __name__=='__main__':
 
 	#read_data_from_excel('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
 	#read_data_from_excel('alexa1m-2017-04-03.csv','alexa1m-2017-04-03',0)
-	read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
+	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
 
 	#read_data_from_csv('D:/DataSet/alexa1m-2017-04-03.csv/alexa1m-2017-04-03.csv',0)
 	
@@ -288,7 +315,21 @@ if __name__=='__main__':
 	#generate_ipv6_pattern()
 	#print_pattern()
 
-	gen_ipv6_scanning_list('00xx000000')
+	#gen_ipv6_scanning_list('00xx000000')
+
+	# 1 read ipv6 address train set
+	read_ipv6_from_32_16_txt('D:/DataSet/responsive-addresses/responsive-addresses-train.txt')
+
+	# 2 generate ipv6 pattern
+	generate_ipv6_pattern()
+
+	# 3 print pattern
+	print_pattern()
+
+
+
+
+
 
 
 
