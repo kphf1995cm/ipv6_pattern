@@ -16,7 +16,7 @@ test_ipv6_list=[] # 测试集
 threshold=120 # minimal determined bit num,global variable
 pattern_det_bit_set={} # pattern:det_bit_set  
 ipv6_width=128
-ipv6_scanning_list_dict=[] # 模式:扫描列表 
+ipv6_scanning_list_dict={} # 模式:扫描列表 
 
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
 ,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
@@ -153,8 +153,6 @@ def gen_ipv6_all_scanning_list():
 	for pattern in pattern_det_bit_set.keys():
 		ipv6_scanning_list_dict[pattern]=gen_ipv6_scanning_list(pattern,pattern_det_bit_set[pattern])
 
-
-
 def print_16_list(value_list):
 	for x in value_list:
 		print('%#x'%x)
@@ -202,6 +200,7 @@ def test_iterate_pattern():
 
 def print_ipv6_scanning_list_dict():
 	for pattern in ipv6_scanning_list_dict.keys():
+		print('pattern:')
 		print_16(pattern)
 		print_16_list(ipv6_scanning_list_dict[pattern])
 		print(len(ipv6_scanning_list_dict[pattern]))
@@ -212,7 +211,6 @@ if __name__=='__main__':
 	gen_ipv6_all_pattern(4)
 	print_pattern_det_bit_set()
 	gen_ipv6_all_scanning_list()
-	print(len(ipv6_scanning_list_list))
 	print_ipv6_scanning_list_dict()
 
 	#ipv6_scan_gen_test()
