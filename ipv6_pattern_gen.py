@@ -10,12 +10,15 @@
 import xlrd
 import csv
 import heapq
+import datetime
+import time
 
 train_ipv6_list=[] #  ipv6地址的16进制表示,整数型，训练集
-test_ipv6_list=[] # 测试集
+test_ipv6_list=set() # 测试集
 threshold=120 # minimal determined bit num,global variable
 pattern_det_bit_set={} # pattern:det_bit_set  
 ipv6_width=128
+start_prefix_len=4
 ipv6_scanning_list_dict={} # 模式:扫描列表 
 
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
@@ -50,6 +53,21 @@ def read_ipv6_from_32_16_txt(ipv6_list,path):
 		line=f.readline()
 		line=line[:-1] 
 
+	f.close()
+
+# file ipv6 format:20011218100002300000000000000252
+def read_ipv6_from_32_16_txt_gen_set(ipv6_list,path):
+	f=open(path,'r')
+	line=f.readline()
+	line=line[:-1]
+
+	while line:
+		int_ipv6=0
+		for x in line:
+			int_ipv6=int_ipv6*16+char_set[x]
+		ipv6_list.add(int_ipv6)
+		line=f.readline()
+		line=line[:-1] 
 	f.close()
 
 # 先确定下全为相同值（或者熵值相差悬殊）的某些位取值，进行优化
@@ -153,6 +171,23 @@ def gen_ipv6_all_scanning_list():
 	for pattern in pattern_det_bit_set.keys():
 		ipv6_scanning_list_dict[pattern]=gen_ipv6_scanning_list(pattern,pattern_det_bit_set[pattern])
 
+def merge_ipv6_scanning_list():
+	ipv6_scanning_list=set()
+	for ipv6_list in ipv6_scanning_list_dict.values():
+		for ipv6 in ipv6_list:
+			ipv6_scanning_list.add(ipv6)
+	return ipv6_scanning_list 
+
+def measure_ipv6_scanning_list_accuracy():
+	ipv6_scanning_list=merge_ipv6_scanning_list()
+	match_num=0
+	for ipv6 in ipv6_scanning_list:
+		if ipv6 in test_ipv6_list:
+			match_num=match_num+1
+	accuracy=match_num/len(ipv6_scanning_list)
+	print('accuracy:',accuracy)
+
+
 def print_16_list(value_list):
 	for x in value_list:
 		print('%#x'%x)
@@ -205,13 +240,29 @@ def print_ipv6_scanning_list_dict():
 		print_16_list(ipv6_scanning_list_dict[pattern])
 		print(len(ipv6_scanning_list_dict[pattern]))
 
+def test_time():
+	time_now=datetime.datetime.now().strftime('%H:%M:%S.%f')
+	print(time_now)
+	last_time=time.time()
+	for i in range(10000000):
+		i=i+1
+	cur_time=time.time()
+	print(cur_time-last_time)
+
 if __name__=='__main__':
 	
-	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses/sample.txt')
-	gen_ipv6_all_pattern(4)
+	last_time=time.time()
+	print('determined_num:',threshold)
+	print('start_prefix_len:',start_prefix_len)
+	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses//responsive-addresses-train.txt')
+	read_ipv6_from_32_16_txt_gen_set(test_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-test.txt')
+	gen_ipv6_all_pattern(start_prefix_len)
 	print_pattern_det_bit_set()
 	gen_ipv6_all_scanning_list()
 	print_ipv6_scanning_list_dict()
+	measure_ipv6_scanning_list_accuracy()
+	cur_time=time.time()
 
+	print('running time:',cur_time-last_time)
 	#ipv6_scan_gen_test()
 
