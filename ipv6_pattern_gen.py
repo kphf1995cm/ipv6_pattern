@@ -16,7 +16,7 @@ test_ipv6_list=[] # 测试集
 threshold=120 # minimal determined bit num,global variable
 pattern_det_bit_set={} # pattern:det_bit_set  
 ipv6_width=128
-ipv6_scanning_list_list=[] # 每种模式会生成一个扫描列表，这个表示扫描列表的列表
+ipv6_scanning_list_dict=[] # 模式:扫描列表 
 
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
 ,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
@@ -151,7 +151,7 @@ def gen_ipv6_scanning_list(pattern,det_bit_set):
 
 def gen_ipv6_all_scanning_list():
 	for pattern in pattern_det_bit_set.keys():
-		ipv6_scanning_list_list.append(gen_ipv6_scanning_list(pattern,pattern_det_bit_set[pattern]))
+		ipv6_scanning_list_dict[pattern]=gen_ipv6_scanning_list(pattern,pattern_det_bit_set[pattern])
 
 
 
@@ -182,17 +182,38 @@ def test_compare_specfic_bit():
 	else:
 		print("false")
 
+def ipv6_scan_gen_test():
+	pattern=0xffff0000000000000000000000000000
+	det_bit_set=set()
+	for i in range(120):
+		det_bit_set.add(i)
+	ipv6s=gen_ipv6_scanning_list(pattern,det_bit_set)
+	for x in ipv6s:
+		print_16(x)
+	print(len(ipv6s))
 
-if __name__=='__main__':
+def test_iterate_pattern():
 	s=set()
 	s.add(0)
 	s.add(1)
 	s.add(2)
 	s.add(3)
+	iterate_pattern(0x20000000000000000000000000000000,4,s)
+
+def print_ipv6_scanning_list_dict():
+	for pattern in ipv6_scanning_list_dict.keys():
+		print_16(pattern)
+		print_16_list(ipv6_scanning_list_dict[pattern])
+		print(len(ipv6_scanning_list_dict[pattern]))
+
+if __name__=='__main__':
+	
 	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses/sample.txt')
-	#iterate_pattern(0x20000000000000000000000000000000,4,s)
 	gen_ipv6_all_pattern(4)
 	print_pattern_det_bit_set()
 	gen_ipv6_all_scanning_list()
-	for x in ipv6_scanning_list_list:
-		print_16_list(x)
+	print(len(ipv6_scanning_list_list))
+	print_ipv6_scanning_list_dict()
+
+	#ipv6_scan_gen_test()
+
