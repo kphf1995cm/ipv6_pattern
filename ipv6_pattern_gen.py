@@ -15,7 +15,7 @@ import time
 
 train_ipv6_list=[] #  ipv6地址的16进制表示,整数型，训练集
 test_ipv6_list=set() # 测试集
-threshold=100 # minimal determined bit num,global variable
+threshold=124 # minimal determined bit num,global variable
 pattern_det_bit_set={} # pattern:det_bit_set  
 ipv6_width=128
 start_prefix_len=1
@@ -237,6 +237,7 @@ def iterate_pattern(pattern,determined_num,det_bit_set):
 	else:
 		max_match_num=0 #最大匹配数 
 		max_bit_index=-1 #最大匹配数对应的位
+		best_pattern=pattern
 		# 从后往前遍历
 		bit_index=ipv6_width-1
 		while bit_index>=0:
@@ -257,16 +258,22 @@ def iterate_pattern(pattern,determined_num,det_bit_set):
 				if cur_match_num_1>max_match_num:
 					max_match_num=cur_match_num_1
 					max_bit_index=bit_index
-					pattern=condidate_pattern_1
+					best_pattern=condidate_pattern_1
 
 				if cur_match_num_0>max_match_num:
 					max_match_num=cur_match_num_0
 					max_bit_index=bit_index
-					pattern=condidate_pattern_0
+					best_pattern=condidate_pattern_0
 			bit_index=bit_index-1
 		if max_match_num>0:	# 限定至少存在一种匹配方式，防止生成无效模式
 			det_bit_set.add(max_bit_index)
+			pattern=best_pattern
+
+			# *******to remove*******************
+			#print('max_bit_index',max_bit_index)
 			#print('best_pattern','%#x'%pattern)
+			# ***********************************
+
 			#print('determined bit:',end=' ')
 			#for x in det_bit_set:
 			#	print(x,end=' ')
@@ -280,7 +287,9 @@ def iterate_gen_ipv6_scanning_list(pattern,det_bit_set,det_bit_num,bit_index,ipv
 	else:
 		while bit_index>=0:
 			if bit_index not in det_bit_set:
+				#print(bit_index)
 				pattern_1=spe_pattern_in_bit(pattern,bit_index,1) #设置为1
+				#print('%#x'%pattern_1,'%#x'%pattern)
 				iterate_gen_ipv6_scanning_list(pattern_1,det_bit_set,det_bit_num+1,bit_index-1,ipv6_scanning_list)
 				iterate_gen_ipv6_scanning_list(pattern,det_bit_set,det_bit_num+1,bit_index-1,ipv6_scanning_list)
 				break
@@ -304,6 +313,14 @@ def improve_gen_ipv6_all_pattern(prefix_len):
 	pattern,det_bit_pos_set=get_determine_bit()
 	det_bit_num=len(det_bit_pos_set)
 	iterate_flag=False
+
+	# *******TO REMOVE****************
+	#print('origin pattern:','%#x'%pattern)
+	#for x in det_bit_pos_set:
+		#print(x,end=' ')
+	#print(' ')
+	# *********************************
+
 	for index in range(prefix_len):
 		if index not in det_bit_pos_set:
 			iterate_flag=True
@@ -330,6 +347,7 @@ def gen_ipv6_all_scanning_list():
 def merge_ipv6_scanning_list():
 	ipv6_scanning_list=set()
 	for ipv6_list in ipv6_scanning_list_dict.values():
+		print('ipv6_list:',len(ipv6_list))
 		for ipv6 in ipv6_list:
 			ipv6_scanning_list.add(ipv6)
 	return ipv6_scanning_list 
@@ -340,7 +358,10 @@ def measure_ipv6_scanning_list_accuracy():
 	for ipv6 in ipv6_scanning_list:
 		if ipv6 in test_ipv6_list:
 			match_num=match_num+1
+	print('ipv6_scanning_list num:',len(ipv6_scanning_list))
+	print('test_ipv6_list:',len(test_ipv6_list))
 	accuracy=match_num/len(ipv6_scanning_list)
+	print('match_num:',match_num)
 	print('accuracy:',accuracy)
 
 
@@ -419,17 +440,17 @@ if __name__=='__main__':
 	print('determined_num:',threshold)
 	print('start_prefix_len:',start_prefix_len)
 
-	read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt',1000,2)
+	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt',100,10)
 	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-train0.txt')
 	#test_get_determine_bit()
-	read_ipv6_from_32_16_txt_gen_set(test_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-test0.txt')
+	read_ipv6_from_32_16_txt_gen_set(test_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-train0.txt')
 	# baseline algorithm(paper)
 	# gen_ipv6_all_pattern(start_prefix_len)
 	# improved algorithm
 	improve_gen_ipv6_all_pattern(start_prefix_len)
 	print_pattern_det_bit_set()
 	gen_ipv6_all_scanning_list()
-	#print_ipv6_scanning_list_dict()
+	#print_ipv6_scanning_list_dict()b
 	measure_ipv6_scanning_list_accuracy()
 	cur_time=time.time()
 
