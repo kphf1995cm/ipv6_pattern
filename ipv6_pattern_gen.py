@@ -15,10 +15,10 @@ import time
 
 train_ipv6_list=[] #  ipv6地址的16进制表示,整数型，训练集
 test_ipv6_list=set() # 测试集
-threshold=124 # minimal determined bit num,global variable
+threshold=108 # minimal determined bit num,global variable
 pattern_det_bit_set={} # pattern:det_bit_set  
 ipv6_width=128
-start_prefix_len=1
+start_prefix_len=16
 ipv6_scanning_list_dict={} # 模式:扫描列表 
 
 char_set={'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9
@@ -99,6 +99,70 @@ def read_write_data_fromin_txt(path,train_sum,ratio):
 	f.close()
 	test.close()
 	train.close()
+
+def gen_train_data_txt(path,start_point,train_num):
+
+	f=open(path,'r')
+	path_seg=path.split('.')
+	trainpath=path_seg[0]+'-trainnum'+'.txt'
+	train=open(trainpath,'w')
+
+	line=f.readline()
+	line=line[:-1]
+
+	ipv6_dict={}
+
+	# ignore first line
+	while line:
+		line=f.readline()
+		line=line[:-1]
+		#print(line)
+		gen_line=ipv6_formate(line)
+		#print('%#x'%gen_line)
+		dst_line=str(hex(gen_line))
+		ipv6_dict[dst_line[2:]]=1
+
+	num=0
+	s=0
+	ipv6_dict_keys=ipv6_dict.keys()
+	for x in ipv6_dict_keys:
+		if s<start_point:
+			s=s+1
+			continue
+		train.writelines(x+'\n')
+		num=num+1
+		if num>=train_num:
+			break
+	f.close()
+	train.close()
+
+def gen_all_testdata_txt(path):
+
+	f=open(path,'r')
+	path_seg=path.split('.')
+	testpath=path_seg[0]+'-testall'+'.txt'
+	test=open(testpath,'w')
+
+	line=f.readline()
+	line=line[:-1]
+
+	ipv6_dict={}
+
+	# ignore first line
+	while line:
+		line=f.readline()
+		line=line[:-1]
+		#print(line)
+		gen_line=ipv6_formate(line)
+		#print('%#x'%gen_line)
+		dst_line=str(hex(gen_line))
+		ipv6_dict[dst_line[2:]]=1
+
+	ipv6_dict_keys=ipv6_dict.keys()
+	for x in ipv6_dict_keys:
+		test.writelines(x+'\n')
+	f.close()
+	test.close()
 
 # ipv6 format standrize
 # input: 2001:1210:100:1::17
@@ -298,6 +362,7 @@ def iterate_gen_ipv6_scanning_list(pattern,det_bit_set,det_bit_num,bit_index,ipv
 
 # 遍历前prefix_len位
 def gen_ipv6_all_pattern(prefix_len):
+	print('gen_ipv6_all_pattern')
 	pattern=0x00000000000000000000000000000000
 	for index in range(prefix_len):
 		s_pattern=(spe_pattern_in_bit(pattern,index,1)) #将特定位设置为1
@@ -310,6 +375,7 @@ def gen_ipv6_all_pattern(prefix_len):
 
 # 先提取ipv6地址中确定位，再遍历前prefix_len位，优化模式生成算法
 def improve_gen_ipv6_all_pattern(prefix_len):
+	print('improve_gen_ipv6_all_pattern')
 	pattern,det_bit_pos_set=get_determine_bit()
 	det_bit_num=len(det_bit_pos_set)
 	iterate_flag=False
@@ -440,12 +506,24 @@ if __name__=='__main__':
 	print('determined_num:',threshold)
 	print('start_prefix_len:',start_prefix_len)
 
-	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt',100,10)
-	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-train0.txt')
+	# 产生全体测试集
+	#gen_all_testdata_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt')
+
+
+	#read_write_data_fromin_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt',12,10)
+	# 产生训练集
+	start_point=10000
+	train_num=10000
+	gen_train_data_txt('D:/DataSet/responsive-addresses/responsive-addresses.txt',start_point,train_num)
+	print('start_point:',start_point)
+	print('train_num:',train_num)
+	
+	# 读取训练集
+	read_ipv6_from_32_16_txt(train_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-trainnum.txt')
 	#test_get_determine_bit()
-	read_ipv6_from_32_16_txt_gen_set(test_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-train0.txt')
+	read_ipv6_from_32_16_txt_gen_set(test_ipv6_list,'D:/DataSet/responsive-addresses/responsive-addresses-testall.txt')
 	# baseline algorithm(paper)
-	# gen_ipv6_all_pattern(start_prefix_len)
+	#gen_ipv6_all_pattern(start_prefix_len)
 	# improved algorithm
 	improve_gen_ipv6_all_pattern(start_prefix_len)
 	print_pattern_det_bit_set()
